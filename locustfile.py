@@ -114,7 +114,7 @@ class AdminStaffTasks(TaskSet):
             'city': fake.city_name(),
             'country': 'Россия',
         }
-        resp = self.client.post(
+        self.client.post(
             '/api/owners',
             json=payload,
             headers=auth_headers(self.access_token),
