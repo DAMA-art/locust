@@ -11,7 +11,6 @@ def auth_headers(token):
     }
 
 class AdminStaffTasks(TaskSet):
-    access_token = None
 
     def on_start(self):
         resp = self.client.post(
@@ -172,7 +171,6 @@ class AdminStaffTasks(TaskSet):
         )
 
 class ClientScenario(SequentialTaskSet):
-    access_token = None
 
     @task
     def login_as_client(self):
