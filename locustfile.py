@@ -7,7 +7,6 @@ fake = Faker('ru_RU')
 def auth_headers(token):
     return {
         'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json',
     }
 
 class AdminStaffTasks(TaskSet):
