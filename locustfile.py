@@ -14,20 +14,16 @@ class AdminStaffTasks(TaskSet):
     access_token = None
 
     def on_start(self):
-        with self.client.post(
+        resp = self.client.post(
             '/api/auth/login',
             json={
                 'username': 'vet',
                 'password': 'vet12345!',
             },
             name='POST /auth/login (staff)',
-            catch_response=True,
-        ) as resp:
-            if resp.status_code == 200:
-                self.access_token = resp.json()['accessToken']
-                resp.success()
-            else:
-                resp.failure(f'Login failed: {resp.status_code}')
+        )
+        if resp.status_code == 200:
+            self.access_token = resp.json()['accessToken']
 
     @task(5)
     def get_pets(self):
@@ -118,17 +114,12 @@ class AdminStaffTasks(TaskSet):
             'city': fake.city_name(),
             'country': 'Россия',
         }
-        with self.client.post(
+        resp = self.client.post(
             '/api/owners',
             json=payload,
             headers=auth_headers(self.access_token),
             name='POST /owners',
-            catch_response=True,
-        ) as resp:
-            if resp.status_code in (200, 201, 422):
-                resp.success()
-            else:
-                resp.failure(f'{resp.status_code}')
+        )
 
     @task(1)
     def create_pet(self):
@@ -155,17 +146,12 @@ class AdminStaffTasks(TaskSet):
             'serviceIds': [random.randint(1, 5)],
             'notes': '',
         }
-        with self.client.post(
+        self.client.post(
             '/api/pets',
             json=payload,
             headers=auth_headers(self.access_token),
             name='POST /pets',
-            catch_response=True,
-        ) as resp:
-            if resp.status_code in (200, 201, 422):
-                resp.success()
-            else:
-                resp.failure(f'{resp.status_code}')
+        )
 
     @task(1)
     def create_service(self):
@@ -178,37 +164,28 @@ class AdminStaffTasks(TaskSet):
             'price': random.randint(300, 5000),
             'clinicId': random.randint(1, 3),
         }
-        with self.client.post(
+        self.client.post(
             '/api/services',
             json=payload,
             headers=auth_headers(self.access_token),
             name='POST /services',
-            catch_response=True,
-        ) as resp:
-            if resp.status_code in (200, 201, 422):
-                resp.success()
-            else:
-                resp.failure(f'{resp.status_code}')
+        )
 
 class ClientScenario(SequentialTaskSet):
     access_token = None
 
     @task
     def login_as_client(self):
-        with self.client.post(
+        resp = self.client.post(
             '/api/auth/login',
             json={
                 'username': 'client',
                 'password': 'client12!',
             },
             name='POST /auth/login (client)',
-            catch_response=True,
-        ) as resp:
-            if resp.status_code == 200:
-                self.access_token = resp.json()['accessToken']
-                resp.success()
-            else:
-                resp.failure(f'Client login failed: {resp.status_code}')
+        )
+        if resp.status_code == 200:
+            self.access_token = resp.json()['accessToken']
 
     @task
     def get_me(self):
@@ -234,17 +211,12 @@ class ClientScenario(SequentialTaskSet):
     def try_extend_visit(self):
         if not self.access_token:
             return
-        with self.client.post(
+        self.client.post(
             '/api/visits/1/extend',
             json={'days': random.randint(1, 5)},
             headers=auth_headers(self.access_token),
             name='POST /visits/{id}/extend',
-            catch_response=True,
-        ) as resp:
-            if resp.status_code in (200, 404, 409):
-                resp.success()
-            else:
-                resp.failure(f'{resp.status_code}')
+        )
 
 class ZooUser(HttpUser):
     wait_time = constant_throughput(2)
